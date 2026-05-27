@@ -1,4 +1,4 @@
-#!/home/harsh-vardhan-pandey/devlog/backend/venv/bin/python3
+#!/home/linux_panda/Devlog/backend/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
