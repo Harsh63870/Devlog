@@ -4,7 +4,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.136-green?style=flat-square)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square)](https://react.dev/)
 [![Ollama](https://img.shields.io/badge/Ollama-Local%20AI-blueviolet?style=flat-square)](https://ollama.ai)
-[![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+
 
 > **Generate professional git commits and PR descriptions in seconds—using 100% local AI. No cloud APIs. No API costs. No data leaving your machine.**
 
