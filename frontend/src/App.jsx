@@ -68,9 +68,9 @@ minHeight: "120px",
     marginRight: "10px",
     marginBottom: "10px",
     cursor: "pointer",
-    borderRadius: "8px",
+    borderRadius: "12px",
     border: "none",
-    backgroundColor: "#111",
+    backgroundColor: "#140a0a",
     color: "white",
   };
 
@@ -85,7 +85,7 @@ minHeight: "120px",
 color: "white",
       }}
     >
-      <h1 style={{ marginBottom: "10px" }}>DevLog</h1>
+      <h1 style={{ marginBottom: "30px" }}>DevLog</h1>
 
       <p style={{ marginBottom: "30px", color: "#766d6d" }}>
         AI-style Git Commit + PR Generator
@@ -118,10 +118,10 @@ color: "white",
   style={{
     whiteSpace: "pre-wrap",
     overflowX: "auto",
-    backgroundColor: "#0d1117",
+    backgroundColor: "#ffffff",
     padding: "16px",
     borderRadius: "8px",
-    color: "#58a6ff",
+    color: "#fdfefe",
     fontSize: "14px",
   }}
 >

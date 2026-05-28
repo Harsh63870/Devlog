@@ -23,7 +23,7 @@ def home():
 def git_diff():
     try:
         result = subprocess.check_output(
-            ["git", "diff"],
+            ["git", "diff", "--cached"],
             cwd="../"
         )
         return {"diff": result.decode("utf-8")}
@@ -34,7 +34,7 @@ def git_diff():
 def generate_commit():
     try:
         diff = subprocess.check_output(
-            ["git", "diff"],
+            ["git", "diff", "--cached"],
             cwd="../"
         ).decode("utf-8")
 
@@ -76,7 +76,7 @@ def generate_commit():
 def generate_pr():
     try:
         diff = subprocess.check_output(
-            ["git", "diff"],
+            ["git", "diff", "--cached"],
             cwd="../"
         ).decode("utf-8")
 
@@ -89,6 +89,16 @@ def generate_pr():
                     filename = parts[2].replace("a/", "")
                     files_changed.append(filename)
 
+        insertions = 0
+        deletions = 0
+
+        for line in diff.splitlines():
+            if line.startswith("+") and not line.startswith("+++"):
+                insertions += 1
+
+            elif line.startswith("-") and not line.startswith("---"):
+                deletions += 1
+
         summary_lines = "\n".join(
             [f"- Updated `{file}`" for file in files_changed]
         )
@@ -97,6 +107,11 @@ def generate_pr():
 ## Summary
 
 {summary_lines}
+
+## Stats
+- Files changed: {len(files_changed)}
+- Insertions: {insertions}
+- Deletions: {deletions}
 
 ## Changes
 - Improved project structure
@@ -112,4 +127,6 @@ def generate_pr():
         }
 
     except Exception as e:
-        return {"description": str(e)}
+        return {
+            "description": str(e)
+        }
