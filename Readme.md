@@ -495,7 +495,3 @@ ollama serve
 That's it. You now have AI-powered git commits running 100% locally. 🚀
 
 ---
-
-**Made with ❤️ by developers, for developers.**
-
----
