@@ -121,8 +121,8 @@ color: "white",
     backgroundColor: "#ffffff",
     padding: "16px",
     borderRadius: "8px",
-    color: "#fdfefe",
-    fontSize: "14px",
+    color: "#105202",
+    fontSize: "12px",
   }}
 >
           {diff}
