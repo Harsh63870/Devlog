@@ -308,7 +308,7 @@ import subprocess
 import ollama
 import time
 
-MODEL = "mistral"   # you can change to "phi3" for speed
+MODEL = "mistral"  
 
 app = FastAPI()
 
@@ -320,15 +320,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# =========================
-# GLOBAL WARM CACHE (IMPORTANT)
-# =========================
 OLLAMA_WARMED = False
-
-
-# =========================
-# HELPERS
-# =========================
 
 def warmup_model():
     """Preload model into memory (removes first-request delay)"""
@@ -375,7 +367,6 @@ def clean_git_diff(diff: str) -> str:
 
     cleaned = "\n".join(cleaned_lines).strip()
 
-    # 🔥 IMPORTANT: limit tokens (SPEED BOOST)
     return cleaned[:3000]
 
 
@@ -409,10 +400,6 @@ Code:
 """
 
 
-# =========================
-# ROUTES
-# =========================
-
 @app.get("/")
 def home():
     return {"message": "DevLog API running 🚀"}
@@ -436,7 +423,7 @@ def generate_commit():
     start = time.time()
 
     try:
-        warmup_model()  # 🔥 key fix
+        warmup_model()  
 
         diff = get_staged_diff()
 
