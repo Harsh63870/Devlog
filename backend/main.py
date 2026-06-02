@@ -372,7 +372,6 @@ def clean_git_diff(diff: str) -> str:
 
 def build_commit_prompt(diff: str) -> str:
     return f"""
-You are an expert software engineer.
 
 Generate a git commit message.
 
