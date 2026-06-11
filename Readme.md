@@ -692,31 +692,6 @@ npm run lint -- --fix
 4. Push and open a PR with a clear description
 5. Respond to feedback, we'll merge!
 
----
-
-## 🚀 Roadmap
-
-### Q2 2025
-- [ ] Commit history with diff replay
-- [ ] Multiple repository support
-- [ ] Markdown export of sessions
-- [ ] Backend unit tests (pytest)
-
-### Q3 2025
-- [ ] Support for Llama 2, Phi models
-- [ ] Interactive model selection UI
-- [ ] Conventional commit prompt templates
-- [ ] Frontend E2E tests (Playwright)
-
-### Q4 2025
-- [ ] Web UI for remote deployment
-- [ ] GitHub Actions integration (auto-commit summaries)
-- [ ] SQLite history database
-- [ ] Dark mode & theme customization
-
-**Have ideas?** Open an [issue](https://github.com/Harsh63870/Devlog-main/issues) or email us!
-
----
 
 ## ❓ FAQ
 
@@ -752,7 +727,7 @@ A: Open an issue on [GitHub](https://github.com/Harsh63870/Devlog-main/issues) w
 
 ## 📝 License
 
-MIT License © 2025. See [LICENSE](./LICENSE) for details.
+MIT License . See [LICENSE](./LICENSE) for details.
 
 Contributions, citations, and attribution appreciated but not required. Use freely for personal, commercial, or educational purposes.
 
@@ -772,6 +747,6 @@ Contributions, citations, and attribution appreciated but not required. Use free
 
 **Made with ❤️ by developers, for developers.**
 
-[⭐ Star us on GitHub](https://github.com/Harsh63870/Devlog-main) • [📧 Email](mailto:hello@devlog.dev) • [Discord](#)
+[⭐ Star us on GitHub](https://github.com/Harsh63870/Devlog-main) • [📧 Email](mailto:harshvardhanpandey372@gmail.com) 
 
 </div>
