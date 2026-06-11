@@ -3,4 +3,5 @@ node_modules/
 venv/
 __pycache__/
 dist/
-.env
+backend/devlog.local.json
+devlog.local.json

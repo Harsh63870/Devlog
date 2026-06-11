@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 export type ViewId = "dashboard" | "analysis" | "commit" | "pr" | "settings";
 
-export type ActivityKind = "scan" | "commit" | "pr" | "copy" | "system";
+export type ActivityKind = "scan" | "commit" | "pr" | "copy" | "system" | "git" | "publish";
 
 export interface ActivityItem {
   id: string;
@@ -17,6 +17,9 @@ export interface GeneratedOutput {
   content: string;
   timestamp: number;
   timeTakenSec?: number;
+  commitHash?: string;
+  prUrl?: string;
+  prNumber?: number;
 }
 
 interface AppState {

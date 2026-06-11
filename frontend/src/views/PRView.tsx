@@ -1,19 +1,76 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { GitPullRequest, RefreshCw, Sparkles, Wand2 } from "lucide-react";
+import { ExternalLink, GitPullRequest, RefreshCw, Sparkles, Upload, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { OutputBlock } from "@/components/shared/OutputBlock";
-import { useGeneratePR } from "@/hooks/useGit";
+import { ConfirmModal } from "@/components/shared/ConfirmModal";
+import { useCreatePR, useGeneratePR, usePushBranch } from "@/hooks/useGit";
 import { useAppStore } from "@/store/useAppStore";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 
 export function PRView() {
   const pr = useGeneratePR();
+  const push = usePushBranch();
+  const createPR = useCreatePR();
   const outputs = useAppStore((s) => s.outputs);
-  const latest = outputs.find((o) => o.kind === "pr");
+  const prOutputs = outputs.filter((o) => o.kind === "pr");
+  const latest = prOutputs[0];
+  const latestCommit = outputs.find((o) => o.kind === "commit");
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [publishStep, setPublishStep] = useState<"idle" | "pushing" | "creating">("idle");
+  const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+  const [publishedNumber, setPublishedNumber] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (latest) {
+      setDescription(latest.content);
+    }
+  }, [latest?.id, latest?.content]);
+
+  useEffect(() => {
+    if (!title && latestCommit?.content) {
+      setTitle(latestCommit.content);
+    } else if (!title && latest?.content) {
+      const firstLine = latest.content.split("\n").find((l) => l.trim()) ?? "";
+      setTitle(firstLine.replace(/^#+\s*/, "").slice(0, 80));
+    }
+  }, [latestCommit?.content, latest?.content, title]);
+
+  const isPublishing = publishStep !== "idle";
+
+  const handlePublish = async () => {
+    setPublishStep("pushing");
+    try {
+      const pushResult = await push.mutateAsync(undefined);
+      if (!pushResult.success) {
+        setPublishStep("idle");
+        setConfirmOpen(false);
+        return;
+      }
+
+      setPublishStep("creating");
+      const prResult = await createPR.mutateAsync({
+        title: title.trim(),
+        body: description.trim(),
+      });
+
+      if (prResult.success && prResult.pr_url) {
+        setPublishedUrl(prResult.pr_url);
+        setPublishedNumber(prResult.pr_number ?? null);
+      }
+    } finally {
+      setPublishStep("idle");
+      setConfirmOpen(false);
+    }
+  };
 
   return (
     <motion.div
@@ -24,7 +81,7 @@ export function PRView() {
     >
       <SectionHeader
         title="PR Generator"
-        description="Structured pull-request descriptions with summary, changes, and stats — ready to paste into GitHub."
+        description="Generate a description locally, then push your branch and open a real pull request on GitHub."
         actions={
           <Button variant="primary" onClick={() => pr.mutate()} disabled={pr.isPending}>
             {pr.isPending ? (
@@ -75,10 +132,76 @@ export function PRView() {
       )}
 
       {!pr.isPending && latest && (
-        <motion.div variants={fadeUp}>
-          <OutputBlock content={latest.content} label="PR description" timeTakenSec={latest.timeTakenSec} mono={false} />
+        <motion.div variants={fadeUp} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <label className="text-[11px] font-semibold uppercase tracking-widest text-text-tertiary">
+              PR title
+            </label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="feat: add something" />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-[11px] font-semibold uppercase tracking-widest text-text-tertiary">
+              PR description
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={14}
+              className="w-full resize-y rounded-xl border border-edge bg-surface-1/60 px-3.5 py-3 font-mono text-sm leading-relaxed text-text-primary outline-none transition-all focus-visible:border-brand-500/50 focus-visible:ring-2 focus-visible:ring-brand-500/30"
+            />
+            {latest.timeTakenSec !== undefined && (
+              <Badge tone="neutral" className="w-fit font-mono text-[10px]">
+                generated in {latest.timeTakenSec}s
+              </Badge>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button
+              variant="primary"
+              onClick={() => setConfirmOpen(true)}
+              disabled={isPublishing || !title.trim() || !description.trim()}
+            >
+              {isPublishing ? (
+                <>
+                  <RefreshCw className="animate-spin" />
+                  {publishStep === "pushing" ? "Pushing…" : "Opening PR…"}
+                </>
+              ) : (
+                <>
+                  <Upload /> Push & Open PR on GitHub
+                </>
+              )}
+            </Button>
+            <span className="text-xs text-text-tertiary">
+              Pushes to origin, then calls GitHub API
+            </span>
+          </div>
+
+          {publishedUrl && (
+            <div className="flex items-center gap-3 rounded-xl border border-accent-emerald/30 bg-accent-emerald/10 px-4 py-3">
+              <GitPullRequest className="size-4 text-accent-emerald" />
+              <span className="flex-1 text-sm text-text-secondary">
+                Pull request {publishedNumber ? `#${publishedNumber}` : ""} created
+              </span>
+              <Button variant="outline" size="sm" onClick={() => window.open(publishedUrl, "_blank")}>
+                <ExternalLink /> Open on GitHub
+              </Button>
+            </div>
+          )}
         </motion.div>
       )}
+
+      <ConfirmModal
+        open={confirmOpen}
+        title="Push branch and open PR?"
+        description={`This will push your current branch to origin and create a pull request titled "${title}". Requires a configured GitHub token.`}
+        confirmLabel="Push & Open PR"
+        loading={isPublishing}
+        onConfirm={handlePublish}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </motion.div>
   );
 }
