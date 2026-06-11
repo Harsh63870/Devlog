@@ -45,5 +45,11 @@
   },
   {
   "homepage": "https://Harsh63870.github.io/devlog"
+  },
+  {
+  "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   }
+}
 }
