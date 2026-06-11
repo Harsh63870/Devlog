@@ -78,3 +78,109 @@ export function useGeneratePR() {
     },
   });
 }
+
+export function useSettings() {
+  return useQuery({
+    queryKey: ["settings"],
+    queryFn: api.getSettings,
+    staleTime: 30_000,
+  });
+}
+
+export function useUpdateSettings() {
+  const queryClient = useQueryClient();
+  const logActivity = useAppStore((s) => s.logActivity);
+
+  return useMutation({
+    mutationFn: api.updateSettings,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      queryClient.invalidateQueries({ queryKey: ["repo-status"] });
+      logActivity("system", "Updated settings");
+      toast.success("Settings saved");
+    },
+    onError: (err: Error) => {
+      toast.error("Failed to save settings", { description: err.message });
+    },
+  });
+}
+
+export function useRepoStatus() {
+  return useQuery({
+    queryKey: ["repo-status"],
+    queryFn: api.getRepoStatus,
+    staleTime: 15_000,
+    retry: 1,
+  });
+}
+
+export function useCommitChanges() {
+  const queryClient = useQueryClient();
+  const logActivity = useAppStore((s) => s.logActivity);
+
+  return useMutation({
+    mutationFn: (message: string) => api.commitChanges(message),
+    onSuccess: (data) => {
+      if (data.success && data.commit_hash) {
+        logActivity("git", `Committed — ${data.commit_hash.slice(0, 7)}`);
+        queryClient.invalidateQueries({ queryKey: ["repo-status"] });
+        queryClient.invalidateQueries({ queryKey: ["git-diff"] });
+        toast.success("Changes committed", { description: data.commit_hash.slice(0, 7) });
+      } else {
+        toast.error("Commit failed", { description: data.error ?? "Unknown error" });
+      }
+    },
+    onError: (err: Error) => {
+      toast.error("Commit failed", { description: err.message });
+    },
+  });
+}
+
+export function usePushBranch() {
+  const queryClient = useQueryClient();
+  const logActivity = useAppStore((s) => s.logActivity);
+
+  return useMutation({
+    mutationFn: (branch?: string) => api.pushBranch(branch),
+    onSuccess: (data) => {
+      if (data.success) {
+        logActivity("git", "Pushed branch to origin");
+        queryClient.invalidateQueries({ queryKey: ["repo-status"] });
+        toast.success("Branch pushed", { description: data.output });
+      } else {
+        toast.error("Push failed", { description: data.error ?? "Unknown error" });
+      }
+    },
+    onError: (err: Error) => {
+      toast.error("Push failed", { description: err.message });
+    },
+  });
+}
+
+export function useCreatePR() {
+  const logActivity = useAppStore((s) => s.logActivity);
+  const addOutput = useAppStore((s) => s.addOutput);
+
+  return useMutation({
+    mutationFn: api.createPR,
+    onSuccess: (data, variables) => {
+      if (data.success && data.pr_url) {
+        logActivity("publish", `Opened PR #${data.pr_number}`);
+        addOutput({
+          kind: "pr",
+          content: variables.body,
+          prUrl: data.pr_url,
+          prNumber: data.pr_number,
+        });
+        toast.success("Pull request created", {
+          description: `PR #${data.pr_number}`,
+        });
+      } else {
+        toast.error("PR creation failed", { description: data.error ?? "Unknown error" });
+      }
+    },
+    onError: (err: Error) => {
+      toast.error("PR creation failed", { description: err.message });
+    },
+  });
+}

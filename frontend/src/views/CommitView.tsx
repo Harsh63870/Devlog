@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { GitCommitHorizontal, RefreshCw, Sparkles, Wand2 } from "lucide-react";
+import { Check, GitCommitHorizontal, RefreshCw, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,15 +8,33 @@ import { Badge } from "@/components/ui/badge";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { OutputBlock } from "@/components/shared/OutputBlock";
-import { useGenerateCommit } from "@/hooks/useGit";
+import { ConfirmModal } from "@/components/shared/ConfirmModal";
+import { useCommitChanges, useGenerateCommit } from "@/hooks/useGit";
 import { useAppStore } from "@/store/useAppStore";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 
 export function CommitView() {
   const commit = useGenerateCommit();
+  const commitChanges = useCommitChanges();
   const outputs = useAppStore((s) => s.outputs);
   const commitOutputs = outputs.filter((o) => o.kind === "commit");
   const latest = commitOutputs[0];
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [lastCommitHash, setLastCommitHash] = useState<string | null>(null);
+
+  const handleCommit = () => {
+    if (!latest) return;
+    commitChanges.mutate(latest.content, {
+      onSuccess: (data) => {
+        if (data.success && data.commit_hash) {
+          setLastCommitHash(data.commit_hash);
+        }
+        setConfirmOpen(false);
+      },
+      onError: () => setConfirmOpen(false),
+    });
+  };
 
   return (
     <motion.div
@@ -26,7 +45,7 @@ export function CommitView() {
     >
       <SectionHeader
         title="Commit Generator"
-        description="AI-written conventional commit messages from your staged diff."
+        description="AI-written conventional commit messages from your staged diff. Generation is local; publishing commits for real."
         actions={
           <Button variant="primary" onClick={() => commit.mutate()} disabled={commit.isPending}>
             {commit.isPending ? (
@@ -78,9 +97,27 @@ export function CommitView() {
         <motion.div variants={fadeUp} className="flex flex-col gap-4">
           <OutputBlock content={latest.content} label="Commit message" timeTakenSec={latest.timeTakenSec} />
 
+          <div className="flex items-center gap-3">
+            <Button variant="primary" onClick={() => setConfirmOpen(true)}>
+              <GitCommitHorizontal /> Commit staged changes
+            </Button>
+            <span className="text-xs text-text-tertiary">
+              Runs <code className="font-mono text-accent-cyan">git commit</code> on your configured repo
+            </span>
+          </div>
+
+          {lastCommitHash && (
+            <div className="flex items-center gap-2 rounded-xl border border-accent-emerald/30 bg-accent-emerald/10 px-4 py-3">
+              <Check className="size-4 text-accent-emerald" />
+              <span className="text-sm text-text-secondary">
+                Committed as <code className="font-mono text-accent-emerald">{lastCommitHash.slice(0, 7)}</code>
+              </span>
+            </div>
+          )}
+
           <div className="rounded-xl border border-edge bg-surface-1/50 p-4">
             <div className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-text-tertiary">
-              Apply it
+              Manual fallback
             </div>
             <code className="block overflow-x-auto whitespace-nowrap rounded-lg bg-surface-0/80 px-3.5 py-2.5 font-mono text-xs text-accent-cyan">
               git commit -m "{latest.content.replaceAll('"', '\\"')}"
@@ -108,6 +145,16 @@ export function CommitView() {
           </Card>
         </motion.div>
       )}
+
+      <ConfirmModal
+        open={confirmOpen}
+        title="Commit staged changes?"
+        description={`This will run git commit with message: "${latest?.content ?? ""}". This action cannot be undone easily.`}
+        confirmLabel="Commit"
+        loading={commitChanges.isPending}
+        onConfirm={handleCommit}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </motion.div>
   );
 }

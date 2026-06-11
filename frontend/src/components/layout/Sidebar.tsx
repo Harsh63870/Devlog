@@ -8,6 +8,7 @@ import {
   Terminal,
 } from "lucide-react";
 import { useAppStore, type ViewId } from "@/store/useAppStore";
+import { useRepoStatus } from "@/hooks/useGit";
 import { Kbd } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +23,7 @@ const NAV_ITEMS: { id: ViewId; label: string; icon: typeof LayoutDashboard; shor
 export function Sidebar() {
   const view = useAppStore((s) => s.view);
   const setView = useAppStore((s) => s.setView);
+  const { data: repo } = useRepoStatus();
 
   return (
     <aside className="glass-strong relative z-20 flex h-full w-60 shrink-0 flex-col border-y-0 border-l-0 max-lg:w-16">
@@ -80,8 +82,23 @@ export function Sidebar() {
             <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent-emerald opacity-60" />
             <span className="relative inline-flex size-2 rounded-full bg-accent-emerald" />
           </span>
-          <div className="text-[11px] text-text-tertiary max-lg:hidden">
-            <span className="font-mono text-accent-emerald">mistral</span> · localhost:8000
+          <div className="min-w-0 text-[11px] text-text-tertiary max-lg:hidden">
+            {repo ? (
+              <>
+                <span className="font-mono text-accent-cyan">{repo.branch}</span>
+                {repo.owner && repo.repo && (
+                  <span className="text-text-tertiary"> · {repo.owner}/{repo.repo}</span>
+                )}
+                {(repo.ahead > 0 || repo.behind > 0) && (
+                  <span className="text-text-tertiary">
+                    {repo.ahead > 0 && ` · ↑${repo.ahead}`}
+                    {repo.behind > 0 && ` · ↓${repo.behind}`}
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="font-mono text-accent-emerald">mistral · local</span>
+            )}
           </div>
         </div>
       </div>

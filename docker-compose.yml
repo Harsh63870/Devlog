@@ -1,0 +1,68 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: devlog-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: devlog-backend
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      REPO_PATH: /repo
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      DEFAULT_BASE_BRANCH: ${DEFAULT_BASE_BRANCH:-main}
+      DEVLOG_CONFIG_DIR: /app/data
+      OLLAMA_HOST: http://ollama:11434
+    volumes:
+      - ${REPO_PATH:-.}:/repo
+      - devlog-config:/app/data
+    depends_on:
+      ollama:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+    container_name: devlog-frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  devlog-config:
+    name: devlog-config
+  ollama-data:
+    name: devlog-ollama-data

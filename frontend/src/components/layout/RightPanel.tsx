@@ -7,10 +7,11 @@ import {
   GitPullRequest,
   ScanLine,
   Sparkles,
+  Upload,
   Zap,
 } from "lucide-react";
 import { useAppStore, type ActivityKind } from "@/store/useAppStore";
-import { useScanDiff, useGenerateCommit, useGeneratePR } from "@/hooks/useGit";
+import { useScanDiff, useGenerateCommit, useGeneratePR, useRepoStatus } from "@/hooks/useGit";
 import { useCopy } from "@/hooks/useCopy";
 import { Badge } from "@/components/ui/badge";
 import { timeAgo, cn } from "@/lib/utils";
@@ -21,6 +22,8 @@ const KIND_META: Record<ActivityKind, { icon: typeof Activity; className: string
   commit: { icon: GitCommitHorizontal, className: "text-brand-300 bg-brand-500/10 border-brand-500/20" },
   pr: { icon: GitPullRequest, className: "text-accent-emerald bg-accent-emerald/10 border-accent-emerald/20" },
   copy: { icon: Copy, className: "text-accent-amber bg-accent-amber/10 border-accent-amber/20" },
+  git: { icon: GitBranch, className: "text-accent-cyan bg-accent-cyan/10 border-accent-cyan/20" },
+  publish: { icon: Upload, className: "text-accent-emerald bg-accent-emerald/10 border-accent-emerald/20" },
   system: { icon: Zap, className: "text-text-tertiary bg-surface-2 border-edge" },
 };
 
@@ -60,10 +63,22 @@ export function RightPanel() {
   const scan = useScanDiff();
   const commit = useGenerateCommit();
   const pr = useGeneratePR();
+  const { data: repo } = useRepoStatus();
   const { copy } = useCopy("Output copied");
 
   return (
     <aside className="glass-strong z-10 flex h-full w-72 shrink-0 flex-col gap-0 overflow-hidden border-y-0 border-r-0 max-xl:hidden">
+      {/* Repo status */}
+      {repo && (
+        <div className="border-b border-edge px-4 py-3">
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+            <Badge tone="cyan" className="font-mono">{repo.branch}</Badge>
+            {repo.ahead > 0 && <Badge tone="emerald" className="font-mono">↑{repo.ahead}</Badge>}
+            {repo.behind > 0 && <Badge tone="amber" className="font-mono">↓{repo.behind}</Badge>}
+          </div>
+        </div>
+      )}
+
       {/* Quick actions */}
       <div className="border-b border-edge p-4">
         <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-text-tertiary">
