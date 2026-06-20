@@ -1,7 +1,11 @@
-# DevLog
-🌐 **Live Demo:** https://devlog-fawn-omega.vercel.app
 <div align="center">
-**✨ AI-powered Git workflow that stays 100% local. Generate commits, PRs, and push to GitHub—all without sending your code to the cloud.**
+
+# DevLog
+
+🌐 **Live Demo:**  
+https://devlog-fawn-omega.vercel.app
+
+**✨ AI-powered Git workflow that stays 100% local. Generate commits, PRs, and push to GitHub without sending your code to the cloud.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue)](https://www.python.org)
@@ -10,7 +14,7 @@
 [![React 19](https://img.shields.io/badge/Frontend-React%2019-61dafb)](https://react.dev)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ed)](https://www.docker.com)
 
- [Documentation](#getting-started) • [Contributing](#contributing) • [Issues](https://github.com/Harsh63870/Devlog-main)
+[Documentation](#getting-started) • [Contributing](#contributing) • [Issues](https://github.com/Harsh63870/Devlog-main/issues)
 
 </div>
 
